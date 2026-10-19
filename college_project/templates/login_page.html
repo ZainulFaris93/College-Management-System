@@ -61,6 +61,29 @@
             <div class="card shadow-sm" >
                     <h3 class="mb-0">Login</h3>
                 <div class="card-body">
+                    {% if demo_mode %}
+                    <div class="demo-box">
+                        <div class="demo-title">Live demo: pick a role to try</div>
+                        <button type="button" class="demo-role" data-u="admin" data-p="Admin@123">Admin <small>admin / Admin@123</small></button>
+                        <button type="button" class="demo-role" data-u="anjali" data-p="Teacher@123">Teacher <small>anjali / Teacher@123</small></button>
+                        <div class="demo-note">Demo data resets automatically. Please don't enter real personal details.</div>
+                    </div>
+                    <style>
+                        .demo-box{background:#f4f6fb;border:1px dashed #343a40;border-radius:10px;padding:14px;margin-bottom:18px}
+                        .demo-title{font-weight:600;margin-bottom:10px;font-size:14px}
+                        .demo-role{display:flex;justify-content:space-between;align-items:center;width:100%;background:#fff;border:1px solid #ced4da;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-weight:600;cursor:pointer}
+                        .demo-role:hover{border-color:#343a40}
+                        .demo-role small{font-family:monospace;color:#6c757d;font-weight:400}
+                        .demo-note{font-size:12px;color:#6c757d}
+                    </style>
+                    <script>
+                    document.addEventListener('click', function (e) {
+                        var b = e.target.closest('.demo-role'); if (!b) return;
+                        document.getElementById('id_username').value = b.dataset.u;
+                        document.getElementById('id_password').value = b.dataset.p;
+                    });
+                    </script>
+                    {% endif %}
                     <form method="post" action="{% url 'login_function' %}">
                         {% csrf_token %}
                         <div class="mb-3">
