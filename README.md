@@ -1,10 +1,10 @@
 # College Management System
 
-[![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://college-management.onrender.com/login_page)
+[![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://college-management-hg11.onrender.com/login_page)
 
 A Django web app for running a college's records. Admins manage courses, students and teachers; teachers sign up, log in and keep their own profile up to date.
 
-**Live demo:** https://college-management.onrender.com/login_page
+**Live demo:** https://college-management-hg11.onrender.com/login_page
 
 | Role    | Username | Password      |
 |---------|----------|---------------|
