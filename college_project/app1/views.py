@@ -3,6 +3,8 @@ from .models import Course,Student,Teacher
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
 from django.contrib.auth import login, logout
+from django.shortcuts import get_object_or_404
+from .access import admin_required, teacher_required, is_protected_demo_user
 
 
 # Create your views here.
@@ -42,19 +44,16 @@ def logout_function(request):
         del request.session['user']  # Clear user session variable
     return redirect('login_page')
 
+@admin_required
 def admin_home(request):
-    if 'user' in request.session:
-        return render(request, 'admin_home.html')
-    else:
-        return redirect('login_page')
+    return render(request, 'admin_home.html')
 
+@teacher_required
 def teacher_home(request):
-    if 'user' in request.session:
-        teacher = Teacher.objects.get(user=request.user)
-        return render(request, 'teacher_home.html', {'teacher': teacher})
-    else:
-        return redirect('login_page')
+    teacher = get_object_or_404(Teacher, user=request.user)
+    return render(request, 'teacher_home.html', {'teacher': teacher})
     
+@admin_required
 def teacher_details(request):
     tchr = Teacher.objects.all()
     return render(request,'teacher_details.html', {'teacher': tchr})
@@ -108,19 +107,25 @@ def signup_function(request):
             messages.info(request, 'Password not matching')
             return redirect('signup_page')
 
+@teacher_required
 def teacher_card(request):
-    tchr=Teacher.objects.get(user=request.user)
+    tchr=get_object_or_404(Teacher, user=request.user)
     return render(request,'teacher_card.html',{'tcr':tchr})
     
+@teacher_required
 def teacher_update(request,id):
-    tch=Teacher.objects.get(id=id)
+    tch=get_object_or_404(Teacher, id=id, user=request.user)
     crcs=Course.objects.all()
     return render(request,'teacher_update.html',{'teacher':tch, 'course':crcs})
 
+@teacher_required
 def teacher_update_function(request,id):
     if request.method == 'POST':
-        teacher = Teacher.objects.get(id=id)
+        teacher = get_object_or_404(Teacher, id=id, user=request.user)
         user = teacher.user
+        if is_protected_demo_user(user):
+            messages.info(request, "This is a shared demo account, so it can't be edited. Sign up as a new teacher to try editing.")
+            return redirect('teacher_card')
 
         teacher.age = request.POST['age']
         teacher.address = request.POST['address']
@@ -141,15 +146,21 @@ def teacher_update_function(request,id):
         messages.success(request, "Profile updated successfully.")
         return redirect('teacher_card')
 
+@admin_required
 def delete_teacher(request, id):
-    teacher=Teacher.objects.get(id=id)
+    teacher=get_object_or_404(Teacher, id=id)
     user = teacher.user
+    if is_protected_demo_user(user):
+        messages.info(request, "Demo accounts can't be deleted. Sign up a new teacher and delete that one.")
+        return redirect('teacher_details')
     teacher.delete()
     user.delete()  # Also delete the associated User instance
     return redirect('teacher_details')
+@admin_required
 def course(request):
     return render(request,'course.html')
 
+@admin_required
 def add_course(request):
     if request.method=='POST':
         cname=request.POST['course']
@@ -159,10 +170,12 @@ def add_course(request):
         messages.success(request, "Course added successfully.")
         return redirect('course')
     
+@admin_required
 def student(request):
     c = Course.objects.all()
     return render(request,'student.html', {'course':c})
 
+@admin_required
 def add_std_details(request):
     if request.method=='POST':
         nam=request.POST['name']
@@ -176,15 +189,18 @@ def add_std_details(request):
         messages.success(request, "Student details added successfully.")
     return redirect('student')
 
+@admin_required
 def show_details(request):
     s = Student.objects.all()
     return render(request,'show_details.html', {'student':s})
 
+@admin_required
 def edit(request, id):
     student = Student.objects.get(id=id)
     courses = Course.objects.all()
     return render(request, 'edit.html', {'student': student, 'courses': courses})
 
+@admin_required
 def edit_details(request, id):
     if request.method == 'POST':
         student = Student.objects.get(id=id)
@@ -198,6 +214,7 @@ def edit_details(request, id):
         messages.success(request, "Student details updated successfully.")
         return redirect('show_details')
 
+@admin_required
 def delete_student(request, id):
     student=Student.objects.get(id=id)
     student.delete()
